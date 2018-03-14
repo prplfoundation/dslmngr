@@ -242,6 +242,34 @@ void dslinfo_to_blob_buffer(struct dsl_info *info, int lineid, struct blob_buf *
 	blobmsg_close_table(b, t);
 }
 
+static int uci_get_dsl_type(char *type)
+{
+	static struct uci_context *ctx = NULL;
+	static struct uci_package *pkg = NULL;
+	struct uci_element *e;
+	int ret = 0;
+
+	ctx = uci_alloc_context();
+	if (uci_load(ctx, "dsl", &pkg))
+		return -1;
+
+	uci_foreach_element(&pkg->sections, e) {
+		struct uci_section *s = uci_to_section(e);
+		const char *dsl_type;
+
+		if (strcmp(s->type, "dsl-line"))
+			continue;
+
+		dsl_type = uci_lookup_option_string(ctx, s, "type");
+		if (dsl_type)
+			sprintf(type, "%s", dsl_type);
+		else
+			ret = -1;
+	}
+	uci_free_context(ctx);
+	return ret;
+}
+
 static int uci_get_dsl_config(struct dsl_config *cfg)
 {
 	static struct uci_context *ctx = NULL;
@@ -285,9 +313,7 @@ static int uci_get_dsl_config(struct dsl_config *cfg)
 						cfg->mode |= (1 << MOD_VDSL2);
 					if (!strcmp(ent->name, "gfast"))
 						cfg->mode |= (1 << MOD_GFAST);
-					//printf("%s%s", ent->name, " ");
 				}
-				printf("\n");
 			}
 		}
 
@@ -315,9 +341,7 @@ static int uci_get_dsl_config(struct dsl_config *cfg)
 						cfg->vdsl2_profile |= VDSL2_30a;
 					if (!strcmp(ent->name, "35b"))
 						cfg->vdsl2_profile |= VDSL2_35b;
-					//printf("%s%s", ent->name, " ");
 				}
-				printf("\n");
 			}
 		}
 
@@ -347,11 +371,15 @@ int dslmgr_dsl_start(struct ubus_context *ctx, struct ubus_object *obj,
 		struct blob_attr *msg)
 {
 	struct dsl_config cfg, *cfgptr = NULL;
+	char type[128] = {0};
+
+	if (uci_get_dsl_type(type) == -1)
+		return UBUS_STATUS_UNKNOWN_ERROR;
 
 	if (uci_get_dsl_config(&cfg) == 0)
 		cfgptr = &cfg;
 
-	if (dsl_start("bcmadsl", cfgptr) < 0)
+	if (dsl_start(type, cfgptr) < 0)
 		return UBUS_STATUS_UNKNOWN_ERROR;
 
 	return UBUS_STATUS_OK;
@@ -361,7 +389,12 @@ int dslmgr_dsl_stop(struct ubus_context *ctx, struct ubus_object *obj,
 		struct ubus_request_data *req, const char *method,
 		struct blob_attr *msg)
 {
-	if (dsl_stop("bcmadsl") < 0)
+	char type[128] = {0};
+
+	if (uci_get_dsl_type(type) == -1)
+		return UBUS_STATUS_UNKNOWN_ERROR;
+
+	if (dsl_stop(type) < 0)
 		return UBUS_STATUS_UNKNOWN_ERROR;
 
 	return UBUS_STATUS_OK;
@@ -375,6 +408,7 @@ int dslmgr_dump_dslstats(struct ubus_context *ctx, struct ubus_object *obj,
 	struct blob_attr *tb[__DSL_STATS_MAX];
 	struct dsl_perfcounters stats;
 	enum dsl_stattype type = STAT_CURR_LINK;
+	char dsltype[128] = {0};
 
 	blobmsg_parse(dsl_stats_policy, __DSL_STATS_MAX, tb,
 					blob_data(msg), blob_len(msg));
@@ -400,7 +434,10 @@ int dslmgr_dump_dslstats(struct ubus_context *ctx, struct ubus_object *obj,
 			return UBUS_STATUS_INVALID_ARGUMENT;
 	}
 
-	if (dsl_get_stats("bcmadsl", type, &stats) < 0)
+	if (uci_get_dsl_type(dsltype) == -1)
+		return UBUS_STATUS_UNKNOWN_ERROR;
+
+	if (dsl_get_stats(dsltype, type, &stats) < 0)
 		return UBUS_STATUS_UNKNOWN_ERROR;
 
 	blob_buf_init(&bb, 0);
@@ -420,6 +457,7 @@ int dslmgr_dump_dslstatus(struct ubus_context *ctx, struct ubus_object *obj,
 	struct blob_attr *tb[__DSL_STATUS_MAX];
 	int ret;
 	int lineid = -1;
+	char type[128] = {0};
 
 	blobmsg_parse(dsl_status_policy, __DSL_STATUS_MAX, tb,
 					blob_data(msg), blob_len(msg));
@@ -430,8 +468,11 @@ int dslmgr_dump_dslstatus(struct ubus_context *ctx, struct ubus_object *obj,
 			return UBUS_STATUS_INVALID_ARGUMENT;
 	}
 
+	if (uci_get_dsl_type(type) == -1)
+		return UBUS_STATUS_UNKNOWN_ERROR;
+
 	memset(&dslinfo, 0, sizeof(dslinfo));
-	ret = dsl_get_status("bcmadsl", &dslinfo);
+	ret = dsl_get_status(type, &dslinfo);
 	if (ret != 0)
 		return UBUS_STATUS_UNKNOWN_ERROR;
 
