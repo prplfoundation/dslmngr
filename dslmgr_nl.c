@@ -32,6 +32,9 @@
 
 #include <netlink/attr.h>
 
+#include <libubox/blobmsg_json.h>
+#include "libubus.h"
+
 #define PRPL_GENL_NAME	"prpl"
 #define PRPL_GENL_GRP	"notify"
 
@@ -44,13 +47,28 @@ enum {
 #define PRPL_NL_MAX (__PRPL_NL_MAX - 1)
 #define MAX_MSG 128
 
+static struct blob_buf b;
+static struct ubus_context *nlctx = NULL;
+
 static struct nla_policy nl_notify_policy[__PRPL_NL_MAX] = {
 	[PRPL_NL_MSG] = { .type = NLA_STRING },
 };
 
 static struct nlattr *attrs[__PRPL_NL_MAX];
 
-static int dslmgr_nl_parser(struct nl_msg *msg, void *arg)
+static int dslmgr_ubus_event(char *data)
+{
+	blob_buf_init(&b, 0);
+
+	if (!blobmsg_add_json_from_string(&b, data)) {
+		fprintf(stderr, "Failed to parse message data\n");
+		return -1;
+	}
+
+	return ubus_send_event(nlctx, NULL, b.head);
+}
+
+static int dslmgr_nl_to_ubus_event(struct nl_msg *msg, void *arg)
 {
 	struct nlmsghdr *nlh = nlmsg_hdr(msg);
 	char *data;
@@ -66,19 +84,19 @@ static int dslmgr_nl_parser(struct nl_msg *msg, void *arg)
 	if (!ret) {
 		if (attrs[PRPL_NL_MSG] ) {
 			data = nla_get_string(attrs[PRPL_NL_MSG]);
-			fprintf(stderr, "event: (%s)\n", data);
-			snprintf(cmd, MAX_MSG, "ubus send %s\n", data);
-			system(cmd);	// FIXME
+			dslmgr_ubus_event(data);
 		}
 	}
 	return 0;
 }
 
-int dslmgr_nl_msgs_handler(void)
+int dslmgr_nl_msgs_handler(struct ubus_context *ctx)
 {
 	struct nl_sock *sock;
 	int grp;
 	int err;
+
+	nlctx = ctx;
 
 	sock = nl_socket_alloc();
 	if(!sock){
@@ -88,7 +106,7 @@ int dslmgr_nl_msgs_handler(void)
 
 	nl_socket_disable_seq_check(sock);
 	err = nl_socket_modify_cb(sock, NL_CB_VALID, NL_CB_CUSTOM,
-				dslmgr_nl_parser, NULL);
+				dslmgr_nl_to_ubus_event, NULL);
 
 	if ((err = genl_connect(sock)) < 0){
 		fprintf(stderr, "Error: %s\n", nl_geterror(err));

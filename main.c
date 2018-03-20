@@ -39,6 +39,8 @@
 
 #define DSLMGR_EVENT_THREAD	"dslmgr_eventd"
 
+static struct ubus_context *ctx = NULL;
+
 static void dslmgr_cmd_main(struct ubus_context *ctx)
 {
 	int ret;
@@ -56,7 +58,7 @@ void *dslmgr_event_main(void *arg)
 	pthread_t me = pthread_self();
 	pthread_setname_np(me, DSLMGR_EVENT_THREAD);
 
-	dslmgr_nl_msgs_handler();
+	dslmgr_nl_msgs_handler(ctx);
 	return NULL;
 }
 
@@ -65,7 +67,6 @@ int main(int argc, char **argv)
 	const char *ubus_socket = NULL;
 	int ch;
 	pthread_t evtid;
-	static struct ubus_context *ctx = NULL;
 
 	while ((ch = getopt(argc, argv, "cs:")) != -1) {
 		switch (ch) {

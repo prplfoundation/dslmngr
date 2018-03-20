@@ -5,6 +5,6 @@
 extern struct ubus_object dsl_object;
 
 
-extern int dslmgr_nl_msgs_handler(void);
+extern int dslmgr_nl_msgs_handler(struct ubus_context *ctx);
 
 #endif /* DSLMGR_H */
