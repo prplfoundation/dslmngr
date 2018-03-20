@@ -6,6 +6,6 @@
 .pkgdir/
 .prepared_*
 *.o
-dslmgr
+dslmngr
 libdsl.so
-ipkg-arm_xscale/
+ipkg-*
