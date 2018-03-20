@@ -56,8 +56,13 @@ static struct nla_policy nl_notify_policy[__PRPL_NL_MAX] = {
 
 static struct nlattr *attrs[__PRPL_NL_MAX];
 
-static int dslmgr_ubus_event(char *data)
+static int dslmgr_ubus_event(char *message)
 {
+	char event[32];
+	char data[128];
+
+	sscanf(message, "%s %[^\n]s", event, data);
+
 	blob_buf_init(&b, 0);
 
 	if (!blobmsg_add_json_from_string(&b, data)) {
@@ -65,13 +70,13 @@ static int dslmgr_ubus_event(char *data)
 		return -1;
 	}
 
-	return ubus_send_event(nlctx, NULL, b.head);
+	return ubus_send_event(nlctx, event, b.head);
 }
 
 static int dslmgr_nl_to_ubus_event(struct nl_msg *msg, void *arg)
 {
 	struct nlmsghdr *nlh = nlmsg_hdr(msg);
-	char *data;
+	char *message;
 	int ret;
 	char cmd[MAX_MSG];
 
@@ -83,8 +88,8 @@ static int dslmgr_nl_to_ubus_event(struct nl_msg *msg, void *arg)
 	ret = genlmsg_parse(nlh, 0, attrs, PRPL_NL_MSG, nl_notify_policy);
 	if (!ret) {
 		if (attrs[PRPL_NL_MSG] ) {
-			data = nla_get_string(attrs[PRPL_NL_MSG]);
-			dslmgr_ubus_event(data);
+			message = nla_get_string(attrs[PRPL_NL_MSG]);
+			dslmgr_ubus_event(message);
 		}
 	}
 	return 0;
