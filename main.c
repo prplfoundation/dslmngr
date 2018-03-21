@@ -39,7 +39,6 @@
 
 #define DSLMGR_EVENT_THREAD	"dslmgr_eventd"
 
-static struct ubus_context *ctx = NULL;
 
 static void dslmgr_cmd_main(struct ubus_context *ctx)
 {
@@ -55,6 +54,8 @@ static void dslmgr_cmd_main(struct ubus_context *ctx)
 
 void *dslmgr_event_main(void *arg)
 {
+	struct ubus_context *ctx = (struct ubus_context *)arg;
+
 	pthread_t me = pthread_self();
 	pthread_setname_np(me, DSLMGR_EVENT_THREAD);
 
@@ -67,6 +68,7 @@ int main(int argc, char **argv)
 	const char *ubus_socket = NULL;
 	int ch;
 	pthread_t evtid;
+	struct ubus_context *ctx = NULL;
 
 	while ((ch = getopt(argc, argv, "cs:")) != -1) {
 		switch (ch) {
@@ -90,7 +92,7 @@ int main(int argc, char **argv)
 
 	ubus_add_uloop(ctx);
 
-	if (pthread_create(&evtid, NULL, &dslmgr_event_main, NULL) != 0)
+	if (pthread_create(&evtid, NULL, &dslmgr_event_main, ctx) != 0)
 		fprintf(stderr, "pthread_create error!\n");
 
 	dslmgr_cmd_main(ctx);
