@@ -133,25 +133,21 @@ const char *dsl_stattype_str(enum dsl_stattype t)
 
 void dslstats_to_blob_buffer(struct dsl_perfcounters *perf, struct blob_buf *b)
 {
-	void *obj;
-
-	obj = blobmsg_open_table(b, dsl_stattype_str(perf->type));
-		blobmsg_add_u64(b, "es_down", perf->es.ds);
-		blobmsg_add_u64(b, "es_up", perf->es.us);
-		blobmsg_add_u64(b, "ses_down", perf->ses.ds);
-		blobmsg_add_u64(b, "ses_up", perf->ses.us);
-		blobmsg_add_u64(b, "uas_down", perf->uas.ds);
-		blobmsg_add_u64(b, "uas_up", perf->uas.us);
-	blobmsg_close_table(b, obj);
+	//blobmsg_add_string(b, "type", dsl_stattype_str(perf->type));
+	blobmsg_add_u64(b, "es_down", perf->es.ds);
+	blobmsg_add_u64(b, "es_up", perf->es.us);
+	blobmsg_add_u64(b, "ses_down", perf->ses.ds);
+	blobmsg_add_u64(b, "ses_up", perf->ses.us);
+	blobmsg_add_u64(b, "uas_down", perf->uas.ds);
+	blobmsg_add_u64(b, "uas_up", perf->uas.us);
 }
 
 void dslinfo_to_blob_buffer(struct dsl_info *info, int lineid, struct blob_buf *b)
 {
-	void *t, *array, *obj;
+	void *array, *obj;
 	struct dsl_link *link = &info->link;
 	int i;
 
-	t = blobmsg_open_table(b, "dslstatus");
 	blobmsg_add_string(b, "mode", dsl_mode_str(link->mode) + 4);
 	blobmsg_add_string(b, "traffic", dsl_tc_str(link->tc_type) + 3);
 	//blobmsg_add_string(b, "status", link->status);
@@ -239,7 +235,6 @@ void dslinfo_to_blob_buffer(struct dsl_info *info, int lineid, struct blob_buf *
 			blobmsg_add_u64(b, "uas_up", link->perf_cnts.uas.us);
 		blobmsg_close_table(b, obj);
 	blobmsg_close_array(b, array);
-	blobmsg_close_table(b, t);
 }
 
 static int uci_get_dsl_type(char *type)
