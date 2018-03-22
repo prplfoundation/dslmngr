@@ -1,5 +1,5 @@
 /*
- * dslmgr_nl.c - converts netlink messages to UBUS events
+ * dslmngr_nl.c - converts netlink messages to UBUS events
  *
  * Copyright (C) 2018 Inteno Broadband Technology AB. All rights reserved.
  *
@@ -56,7 +56,7 @@ static struct nla_policy nl_notify_policy[__PRPL_NL_MAX] = {
 
 static struct nlattr *attrs[__PRPL_NL_MAX];
 
-static int dslmgr_ubus_event(char *message)
+static int dslmngr_ubus_event(char *message)
 {
 	char event[32];
 	char data[128];
@@ -73,7 +73,7 @@ static int dslmgr_ubus_event(char *message)
 	return ubus_send_event(nlctx, event, b.head);
 }
 
-static int dslmgr_nl_to_ubus_event(struct nl_msg *msg, void *arg)
+static int dslmngr_nl_to_ubus_event(struct nl_msg *msg, void *arg)
 {
 	struct nlmsghdr *nlh = nlmsg_hdr(msg);
 	char *message;
@@ -89,13 +89,13 @@ static int dslmgr_nl_to_ubus_event(struct nl_msg *msg, void *arg)
 	if (!ret) {
 		if (attrs[PRPL_NL_MSG] ) {
 			message = nla_get_string(attrs[PRPL_NL_MSG]);
-			dslmgr_ubus_event(message);
+			dslmngr_ubus_event(message);
 		}
 	}
 	return 0;
 }
 
-int dslmgr_nl_msgs_handler(struct ubus_context *ctx)
+int dslmngr_nl_msgs_handler(struct ubus_context *ctx)
 {
 	struct nl_sock *sock;
 	int grp;
@@ -111,7 +111,7 @@ int dslmgr_nl_msgs_handler(struct ubus_context *ctx)
 
 	nl_socket_disable_seq_check(sock);
 	err = nl_socket_modify_cb(sock, NL_CB_VALID, NL_CB_CUSTOM,
-				dslmgr_nl_to_ubus_event, NULL);
+				dslmngr_nl_to_ubus_event, NULL);
 
 	if ((err = genl_connect(sock)) < 0){
 		fprintf(stderr, "Error: %s\n", nl_geterror(err));

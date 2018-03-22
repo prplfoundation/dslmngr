@@ -1,5 +1,5 @@
 /*
- * dslmgr.c - provides "xdsl" UBUS object
+ * dslmngr.c - provides "xdsl" UBUS object
  *
  * Copyright (C) 2018 Inteno Broadband Technology AB. All rights reserved.
  *
@@ -30,7 +30,7 @@
 
 #include <xdsl.h>
 
-#include "dslmgr.h"
+#include "dslmngr.h"
 
 enum {
 	DSL_STATS_TYPE,
@@ -366,7 +366,7 @@ static int uci_get_dsl_config(struct dsl_config *cfg)
 	return 0;
 }
 
-int dslmgr_dsl_start(struct ubus_context *ctx, struct ubus_object *obj,
+int dslmngr_dsl_start(struct ubus_context *ctx, struct ubus_object *obj,
 		struct ubus_request_data *req, const char *method,
 		struct blob_attr *msg)
 {
@@ -385,7 +385,7 @@ int dslmgr_dsl_start(struct ubus_context *ctx, struct ubus_object *obj,
 	return UBUS_STATUS_OK;
 }
 
-int dslmgr_dsl_stop(struct ubus_context *ctx, struct ubus_object *obj,
+int dslmngr_dsl_stop(struct ubus_context *ctx, struct ubus_object *obj,
 		struct ubus_request_data *req, const char *method,
 		struct blob_attr *msg)
 {
@@ -400,7 +400,7 @@ int dslmgr_dsl_stop(struct ubus_context *ctx, struct ubus_object *obj,
 	return UBUS_STATUS_OK;
 }
 
-int dslmgr_dump_dslstats(struct ubus_context *ctx, struct ubus_object *obj,
+int dslmngr_dump_dslstats(struct ubus_context *ctx, struct ubus_object *obj,
 		struct ubus_request_data *req, const char *method,
 		struct blob_attr *msg)
 {
@@ -448,7 +448,7 @@ int dslmgr_dump_dslstats(struct ubus_context *ctx, struct ubus_object *obj,
 	return UBUS_STATUS_OK;
 }
 
-int dslmgr_dump_dslstatus(struct ubus_context *ctx, struct ubus_object *obj,
+int dslmngr_dump_dslstatus(struct ubus_context *ctx, struct ubus_object *obj,
 		struct ubus_request_data *req, const char *method,
 		struct blob_attr *msg)
 {
@@ -484,10 +484,10 @@ int dslmgr_dump_dslstatus(struct ubus_context *ctx, struct ubus_object *obj,
 }
 
 struct ubus_method dsl_methods[] = {
-	UBUS_METHOD("status", dslmgr_dump_dslstatus, dsl_status_policy),
-	UBUS_METHOD_NOARG("start", dslmgr_dsl_start),
-	UBUS_METHOD_NOARG("stop", dslmgr_dsl_stop),
-	UBUS_METHOD("stats", dslmgr_dump_dslstats, dsl_stats_policy),
+	UBUS_METHOD("status", dslmngr_dump_dslstatus, dsl_status_policy),
+	UBUS_METHOD_NOARG("start", dslmngr_dsl_start),
+	UBUS_METHOD_NOARG("stop", dslmngr_dsl_stop),
+	UBUS_METHOD("stats", dslmngr_dump_dslstats, dsl_stats_policy),
 };
 
 struct ubus_object_type dsl_type = UBUS_OBJECT_TYPE("xdsl", dsl_methods);

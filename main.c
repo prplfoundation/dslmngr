@@ -1,5 +1,5 @@
 /*
- * main.c - dslmgr application
+ * main.c - dslmngr application
  *
  * Copyright (C) 2018 Inteno Broadband Technology AB. All rights reserved.
  *
@@ -35,12 +35,12 @@
 #include <libubox/utils.h>
 #include <libubus.h>
 
-#include "dslmgr.h"
+#include "dslmngr.h"
 
-#define DSLMGR_EVENT_THREAD	"dslmgr_eventd"
+#define DSLMGR_EVENT_THREAD	"dslmngr_eventd"
 
 
-static void dslmgr_cmd_main(struct ubus_context *ctx)
+static void dslmngr_cmd_main(struct ubus_context *ctx)
 {
 	int ret;
 
@@ -52,14 +52,14 @@ static void dslmgr_cmd_main(struct ubus_context *ctx)
 	uloop_run();
 }
 
-void *dslmgr_event_main(void *arg)
+void *dslmngr_event_main(void *arg)
 {
 	struct ubus_context *ctx = (struct ubus_context *)arg;
 
 	pthread_t me = pthread_self();
 	pthread_setname_np(me, DSLMGR_EVENT_THREAD);
 
-	dslmgr_nl_msgs_handler(ctx);
+	dslmngr_nl_msgs_handler(ctx);
 	return NULL;
 }
 
@@ -92,10 +92,10 @@ int main(int argc, char **argv)
 
 	ubus_add_uloop(ctx);
 
-	if (pthread_create(&evtid, NULL, &dslmgr_event_main, ctx) != 0)
+	if (pthread_create(&evtid, NULL, &dslmngr_event_main, ctx) != 0)
 		fprintf(stderr, "pthread_create error!\n");
 
-	dslmgr_cmd_main(ctx);
+	dslmngr_cmd_main(ctx);
 
 	uloop_run();
 	ubus_free(ctx);

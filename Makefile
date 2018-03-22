@@ -1,5 +1,5 @@
 PROG = dslmngr
-OBJS = dslmgr.o dslmgr_nl.o main.o
+OBJS = dslmngr.o dslmngr_nl.o main.o
 
 PROG_CFLAGS = $(CFLAGS) -fstrict-aliasing -I./libdsl
 PROG_LDFLAGS = $(LDFLAGS) -L. -L./libdsl -ldsl -pthread
