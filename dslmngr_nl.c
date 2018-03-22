@@ -47,17 +47,15 @@ enum {
 #define PRPL_NL_MAX (__PRPL_NL_MAX - 1)
 #define MAX_MSG 128
 
-static struct blob_buf b;
-static struct ubus_context *nlctx = NULL;
-
 static struct nla_policy nl_notify_policy[__PRPL_NL_MAX] = {
 	[PRPL_NL_MSG] = { .type = NLA_STRING },
 };
 
 static struct nlattr *attrs[__PRPL_NL_MAX];
 
-static int dslmngr_ubus_event(char *message)
+static int dslmngr_ubus_event(struct ubus_context *ctx, char *message)
 {
+	static struct blob_buf b;
 	char event[32];
 	char data[128];
 
@@ -70,15 +68,15 @@ static int dslmngr_ubus_event(char *message)
 		return -1;
 	}
 
-	return ubus_send_event(nlctx, event, b.head);
+	return ubus_send_event(ctx, event, b.head);
 }
 
 static int dslmngr_nl_to_ubus_event(struct nl_msg *msg, void *arg)
 {
 	struct nlmsghdr *nlh = nlmsg_hdr(msg);
+	struct ubus_context *ctx = (struct ubus_context *)arg;
 	char *message;
 	int ret;
-	char cmd[MAX_MSG];
 
 	if (!genlmsg_valid_hdr(nlh, 0)){
 		fprintf(stderr, "got invalid message\n");
@@ -89,7 +87,7 @@ static int dslmngr_nl_to_ubus_event(struct nl_msg *msg, void *arg)
 	if (!ret) {
 		if (attrs[PRPL_NL_MSG] ) {
 			message = nla_get_string(attrs[PRPL_NL_MSG]);
-			dslmngr_ubus_event(message);
+			dslmngr_ubus_event(ctx, message);
 		}
 	}
 	return 0;
@@ -101,8 +99,6 @@ int dslmngr_nl_msgs_handler(struct ubus_context *ctx)
 	int grp;
 	int err;
 
-	nlctx = ctx;
-
 	sock = nl_socket_alloc();
 	if(!sock){
 		fprintf(stderr, "Error: nl_socket_alloc\n");
@@ -111,7 +107,7 @@ int dslmngr_nl_msgs_handler(struct ubus_context *ctx)
 
 	nl_socket_disable_seq_check(sock);
 	err = nl_socket_modify_cb(sock, NL_CB_VALID, NL_CB_CUSTOM,
-				dslmngr_nl_to_ubus_event, NULL);
+				dslmngr_nl_to_ubus_event, ctx);
 
 	if ((err = genl_connect(sock)) < 0){
 		fprintf(stderr, "Error: %s\n", nl_geterror(err));
