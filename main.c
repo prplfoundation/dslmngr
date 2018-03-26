@@ -68,6 +68,7 @@ int main(int argc, char **argv)
 	const char *ubus_socket = NULL;
 	int ch;
 	pthread_t evtid;
+	pthread_attr_t attr, *pattr = NULL;
 	struct ubus_context *ctx = NULL;
 
 	while ((ch = getopt(argc, argv, "cs:")) != -1) {
@@ -92,7 +93,17 @@ int main(int argc, char **argv)
 
 	ubus_add_uloop(ctx);
 
-	if (pthread_create(&evtid, NULL, &dslmngr_event_main, ctx) != 0)
+	if (pthread_attr_init(&attr) == 0) {
+		struct sched_param sp;
+
+		pthread_attr_setinheritsched(&attr, PTHREAD_EXPLICIT_SCHED);
+		pthread_attr_setschedpolicy(&attr, SCHED_RR);
+		sp.sched_priority = 99;
+		pthread_attr_setschedparam(&attr, &sp);
+		pattr = &attr;
+	}
+
+	if (pthread_create(&evtid, pattr, &dslmngr_event_main, ctx) != 0)
 		fprintf(stderr, "pthread_create error!\n");
 
 	dslmngr_cmd_main(ctx);
