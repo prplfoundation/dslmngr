@@ -59,12 +59,12 @@ static int dslmngr_ubus_event(struct ubus_context *ctx, char *message)
 	char event[32];
 	char data[128];
 
-	sscanf(message, "%s %[^\n]s", event, data);
+	sscanf(message, "%s '%[^\n]s'", event, data);
 
 	blob_buf_init(&b, 0);
 
 	if (!blobmsg_add_json_from_string(&b, data)) {
-		fprintf(stderr, "Failed to parse message data\n");
+		fprintf(stderr, "Failed to parse message data: %s\n", data);
 		return -1;
 	}
 
@@ -79,7 +79,7 @@ static int dslmngr_nl_to_ubus_event(struct nl_msg *msg, void *arg)
 	int ret;
 
 	if (!genlmsg_valid_hdr(nlh, 0)){
-		fprintf(stderr, "got invalid message\n");
+		fprintf(stderr, "received invalid message\n");
 		return 0;
 	}
 
