@@ -1,0 +1,22 @@
+PrplWrt DSL PoC consists of two parts.
+
+libdsl: SoC independent DSL API covering functions to configure DSL and gather stats.
+
+dsmngr: Userspace application to configure DSL from UCI options and provide ubus interface to start/stop DSL and gather stats. dslmngr links with libdsl and utilizes the libdsl functions.
+
+
+     -----------------
+    |xdsl object @ubus|
+     -----------------
+	   ||
+	 -------
+	|dslmngr|
+	 -------
+	   ||
+	 ------
+	|libdsl|
+	 ------
+	   ||
+       ----------
+      |DSL Driver|
+       ----------
