@@ -35,23 +35,23 @@
 #include <libubox/blobmsg_json.h>
 #include "libubus.h"
 
-#define PRPL_GENL_NAME	"prpl"
-#define PRPL_GENL_GRP	"notify"
+#define XDSL_GENL_NAME	"xdsl"
+#define XDSL_GENL_GRP	"notify"
 
 /* nl attributes */
 enum {
-	PRPL_NL_UNSPEC,
-	PRPL_NL_MSG,
-	__PRPL_NL_MAX,
+	XDSL_NL_UNSPEC,
+	XDSL_NL_MSG,
+	__XDSL_NL_MAX,
 };
-#define PRPL_NL_MAX (__PRPL_NL_MAX - 1)
+#define XDSL_NL_MAX (__XDSL_NL_MAX - 1)
 #define MAX_MSG 128
 
-static struct nla_policy nl_notify_policy[__PRPL_NL_MAX] = {
-	[PRPL_NL_MSG] = { .type = NLA_STRING },
+static struct nla_policy nl_notify_policy[__XDSL_NL_MAX] = {
+	[XDSL_NL_MSG] = { .type = NLA_STRING },
 };
 
-static struct nlattr *attrs[__PRPL_NL_MAX];
+static struct nlattr *attrs[__XDSL_NL_MAX];
 
 static int dslmngr_ubus_event(struct ubus_context *ctx, char *message)
 {
@@ -83,10 +83,10 @@ static int dslmngr_nl_to_ubus_event(struct nl_msg *msg, void *arg)
 		return 0;
 	}
 
-	ret = genlmsg_parse(nlh, 0, attrs, PRPL_NL_MSG, nl_notify_policy);
+	ret = genlmsg_parse(nlh, 0, attrs, XDSL_NL_MSG, nl_notify_policy);
 	if (!ret) {
-		if (attrs[PRPL_NL_MSG] ) {
-			message = nla_get_string(attrs[PRPL_NL_MSG]);
+		if (attrs[XDSL_NL_MSG] ) {
+			message = nla_get_string(attrs[XDSL_NL_MSG]);
 			dslmngr_ubus_event(ctx, message);
 		}
 	}
@@ -115,12 +115,12 @@ int dslmngr_nl_msgs_handler(struct ubus_context *ctx)
 	}
 
 	if ((grp = genl_ctrl_resolve_grp(sock,
-					PRPL_GENL_NAME,
-					PRPL_GENL_GRP)) < 0) {
+					XDSL_GENL_NAME,
+					XDSL_GENL_GRP)) < 0) {
 		/* fprintf(stderr, "Error: %s (%s grp %s)\n",
 				nl_geterror(grp),
-				PRPL_GENL_NAME,
-				PRPL_GENL_GRP); */
+				XDSL_GENL_NAME,
+				XDSL_GENL_GRP); */
 		return -1;
 	}
 
@@ -131,8 +131,8 @@ int dslmngr_nl_msgs_handler(struct ubus_context *ctx)
 		if (err < 0) {
 			fprintf(stderr, "Error: %s (%s grp %s)\n",
 					nl_geterror(err),
-					PRPL_GENL_NAME,
-					PRPL_GENL_GRP);
+					XDSL_GENL_NAME,
+					XDSL_GENL_GRP);
 		}
 	}
 
