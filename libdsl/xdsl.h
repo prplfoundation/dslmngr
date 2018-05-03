@@ -127,6 +127,7 @@ enum dsl_traffictype {
 	TC_PTM,
 	TC_ATM,
 	TC_RAW,
+	TC_AUTO,
 	TC_NOT_CONNECTED,
 };
 

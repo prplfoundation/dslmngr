@@ -67,11 +67,18 @@ int intel_xdsl_get_status(char *name, struct dsl_info *info)
 {
 	struct dsl_fapi_line_obj lineobj, *obj = &lineobj;
 	unsigned long size = sizeof(struct dsl_fapi_line_obj);
+	DSL_PM_DataPathCountersTotal_t data_path_counters_total;
+	DSL_PM_ChannelCountersTotal_t channel_counters_total;
+	DSL_PM_LineSecCountersTotal_t line_counters_total;
+	DSL_SystemInterfaceStatus_t system_interface_status;
+	DSL_G997_FramingParameterStatus_t framing_param;
 	DSL_DslModeSelection_t dsl_mode = DSL_MODE_NA;
+	DSL_G997_ChannelStatus_t channel_status;
 	DSL_G997_XTUSystemEnabling_t xtu_status;
 	DSL_AutobootStatus_t autoboot_status;
 	DSL_BandPlanStatus_t profiles_status;
 	DSL_G997_LineStatus_t line_status;
+	DSL_LineFeature_t line_feature;
 	DSL_LineState_t line_state;
 	struct dsl_line *line;
 	struct dsl_link *link;
@@ -104,6 +111,7 @@ int intel_xdsl_get_status(char *name, struct dsl_info *info)
 	}
 
 	info->num_lines = 1;	/* TODO: probe */
+	line = &info->line[0];
 
 	/* line status */
 	memset(&line_state, 0x00, sizeof(DSL_LineState_t));
@@ -170,6 +178,27 @@ int intel_xdsl_get_status(char *name, struct dsl_info *info)
 		link->vdsl2_profile = profiles_status.data.nProfile & 0x1ff;
 	}
 
+	/* trellis coding */
+	memset(&line_feature, 0x00, sizeof(DSL_LineFeature_t));
+	line_feature.nDirection = DSL_DOWNSTREAM;
+	ret = ioctl(fd, DSL_FIO_LINE_FEATURE_STATUS_GET, (int)&line_feature);
+	if ((ret < 0) && (line_feature.accessCtl.nReturn < DSL_SUCCESS)) {
+		fprintf(stderr, "Trellis get ds: error code %d\n",
+					line_feature.accessCtl.nReturn);
+	} else {
+		link->trellis_enabled.ds = line_feature.data.bTrellisEnable;
+	}
+
+	memset(&line_feature, 0x00, sizeof(DSL_LineFeature_t));
+	line_feature.nDirection = DSL_UPSTREAM;
+	ret = ioctl(fd, DSL_FIO_LINE_FEATURE_STATUS_GET, (int)&line_feature);
+	if ((ret < 0) && (line_feature.accessCtl.nReturn < DSL_SUCCESS)) {
+		fprintf(stderr, "Trellis get us: error code %d\n",
+					line_feature.accessCtl.nReturn);
+	} else {
+		link->trellis_enabled.us = line_feature.data.bTrellisEnable;
+	}
+
 	/* Max bitrate, SNR, Power, Attn */
 	memset(&line_status, 0x00, sizeof(DSL_G997_LineStatus_t));
 	line_status.nDirection = DSL_UPSTREAM;
@@ -197,6 +226,175 @@ int intel_xdsl_get_status(char *name, struct dsl_info *info)
 		link->snr_margin.ds = line_status.data.SNR;
 		link->power.ds = line_status.data.ACTATP;
 		link->attn.ds = line_status.data.LATN;
+	}
+
+	/* TPS-TC */
+	memset(&system_interface_status, 0x00, sizeof(DSL_SystemInterfaceStatus_t));
+	ret = ioctl(fd, DSL_FIO_SYSTEM_INTERFACE_STATUS_GET, (int)&system_interface_status);
+	if ((ret < 0) && (system_interface_status.accessCtl.nReturn < DSL_SUCCESS)) {
+		fprintf(stderr, "Link encapsulation used? error code %d\n",
+				system_interface_status.accessCtl.nReturn);
+	} else {
+		switch (system_interface_status.data.nTcLayer) {
+		case DSL_TC_ATM:
+			link->tc_type = TC_ATM;
+			break;
+
+		case DSL_TC_EFM:
+		case DSL_TC_EFM_FORCED:
+			link->tc_type = TC_PTM;
+			break;
+
+		case DSL_TC_AUTO:
+			link->tc_type = TC_AUTO;
+			break;
+
+		default:
+			link->tc_type = TC_RAW;
+		}
+	}
+
+	/* INP, INPRein, delay, current rate */
+	memset(&channel_status, 0x00, sizeof(DSL_G997_ChannelStatus_t));
+	channel_status.nChannel = 0;
+	channel_status.nDirection = DSL_DOWNSTREAM;
+	ret = ioctl(fd, DSL_FIO_G997_CHANNEL_STATUS_GET, (int)&channel_status);
+	if ((ret < 0) && (channel_status.accessCtl.nReturn < DSL_SUCCESS)) {
+		fprintf(stderr, "G997_CHANNEL_STATUS get ds: error code %d\n",
+					channel_status.accessCtl.nReturn);
+	} else {
+		line->param.delay.ds = channel_status.data.ActualInterleaveDelay;
+		line->rate_kbps.ds = channel_status.data.ActualDataRate;
+		line->param.inp.ds = channel_status.data.ActualImpulseNoiseProtection;
+		line->param.inprein.ds = channel_status.data.ActualImpulseNoiseProtectionRein;
+	}
+
+	memset(&channel_status, 0x00, sizeof(DSL_G997_ChannelStatus_t));
+	channel_status.nChannel = 0;
+	channel_status.nDirection = DSL_UPSTREAM;
+	ret = ioctl(fd, DSL_FIO_G997_CHANNEL_STATUS_GET, (int)&channel_status);
+	if ((ret < 0) && (channel_status.accessCtl.nReturn < DSL_SUCCESS)) {
+		fprintf(stderr, "G997_CHANNEL_STATUS get us: error code %d\n",
+					channel_status.accessCtl.nReturn);
+	} else {
+		line->param.delay.us = channel_status.data.ActualInterleaveDelay;
+		line->rate_kbps.us = channel_status.data.ActualDataRate;
+		line->param.inp.us = channel_status.data.ActualImpulseNoiseProtection;
+		line->param.inprein.us = channel_status.data.ActualImpulseNoiseProtectionRein;
+	}
+
+	/* line params - n, r, l, d */
+	memset(&framing_param, 0x00, sizeof(DSL_G997_FramingParameterStatus_t));
+	framing_param.nChannel = 0;
+	framing_param.nDirection = DSL_DOWNSTREAM;
+	ret = ioctl(fd, DSL_FIO_G997_FRAMING_PARAMETER_STATUS_GET,
+					(int)&framing_param);
+	if ((ret < 0) && (framing_param.accessCtl.nReturn < DSL_SUCCESS)) {
+		fprintf(stderr, "G997_FRAMING_PARAM get ds: error code %d\n",
+				framing_param.accessCtl.nReturn);
+	} else {
+		line->param.d.ds = framing_param.data.nINTLVDEPTH;
+		line->param.n.ds = framing_param.data.nNFEC;
+		line->param.r.ds = framing_param.data.nRFEC;
+		line->param.l.ds = framing_param.data.nLSYMB;
+	}
+
+	memset(&framing_param, 0x00, sizeof(DSL_G997_FramingParameterStatus_t));
+	framing_param.nChannel = 0;
+	framing_param.nDirection = DSL_UPSTREAM;
+	ret = ioctl(fd, DSL_FIO_G997_FRAMING_PARAMETER_STATUS_GET,
+					(int)&framing_param);
+	if ((ret < 0) && (framing_param.accessCtl.nReturn < DSL_SUCCESS)) {
+		fprintf(stderr, "G997_FRAMING_PARAM get us: error code %d\n",
+				framing_param.accessCtl.nReturn);
+	} else {
+		line->param.d.us = framing_param.data.nINTLVDEPTH;
+		line->param.n.us = framing_param.data.nNFEC;
+		line->param.r.us = framing_param.data.nRFEC;
+		line->param.l.us = framing_param.data.nLSYMB;
+	}
+
+	/* Performance counters (total) */
+	link->perf_cnts.type = STAT_TOTAL;
+	memset(&channel_counters_total, 0x00, sizeof(DSL_PM_ChannelCountersTotal_t));
+	channel_counters_total.nChannel = 0;
+	channel_counters_total.nDirection = DSL_NEAR_END;
+	ret = ioctl(fd, DSL_FIO_PM_CHANNEL_COUNTERS_TOTAL_GET,
+		    (int)&channel_counters_total);
+	if ((ret < 0) && (channel_counters_total.accessCtl.nReturn < DSL_SUCCESS)) {
+		fprintf(stderr, "Channel counters near end: error code %d\n",
+				channel_counters_total.accessCtl.nReturn);
+	} else {
+		link->perf_cnts.secs =
+			channel_counters_total.total.nElapsedTime;
+
+		line->err.fec.us = channel_counters_total.data.nFEC;
+		line->err.crc.us = channel_counters_total.data.nCodeViolations;
+	}
+
+	memset(&line_counters_total, 0x00, sizeof(DSL_PM_LineSecCountersTotal_t));
+	line_counters_total.nDirection = DSL_NEAR_END;
+	ret = ioctl(fd, DSL_FIO_PM_LINE_SEC_COUNTERS_TOTAL_GET,
+		    (int)&line_counters_total);
+	if ((ret < 0) && (line_counters_total.accessCtl.nReturn < DSL_SUCCESS)) {
+		fprintf(stderr, "Stats total near end: error code %d\n",
+				line_counters_total.accessCtl.nReturn);
+	} else {
+		link->perf_cnts.es.us =
+			line_counters_total.data.nES;
+		link->perf_cnts.ses.us =
+			line_counters_total.data.nSES;
+	}
+
+	memset(&line_counters_total, 0x00, sizeof(DSL_PM_LineSecCountersTotal_t));
+	line_counters_total.nDirection = DSL_FAR_END;
+	ret = ioctl(fd, DSL_FIO_PM_LINE_SEC_COUNTERS_TOTAL_GET,
+		    (int)&line_counters_total);
+	if ((ret < 0) && (line_counters_total.accessCtl.nReturn < DSL_SUCCESS)) {
+		fprintf(stderr, "Stats total far end: error code %d\n",
+				line_counters_total.accessCtl.nReturn);
+	} else {
+		link->perf_cnts.es.ds =
+			line_counters_total.data.nES;
+		link->perf_cnts.ses.ds =
+			line_counters_total.data.nSES;
+	}
+
+	memset(&channel_counters_total, 0x00, sizeof(DSL_PM_ChannelCountersTotal_t));
+	channel_counters_total.nChannel = 0;
+	channel_counters_total.nDirection = DSL_FAR_END;
+	ret = ioctl(fd, DSL_FIO_PM_CHANNEL_COUNTERS_TOTAL_GET, (int)&channel_counters_total);
+	if ((ret < 0) && (channel_counters_total.accessCtl.nReturn < DSL_SUCCESS)) {
+		fprintf(stderr, "FEC, CRC far end: error code %d\n",
+				channel_counters_total.accessCtl.nReturn);
+	} else {
+		line->err.fec.ds = channel_counters_total.data.nFEC;
+		line->err.crc.us = channel_counters_total.data.nCodeViolations;
+	}
+
+	memset(&data_path_counters_total, 0x00, sizeof(DSL_PM_DataPathCountersTotal_t));
+	data_path_counters_total.nChannel = 0;
+	data_path_counters_total.nDirection = DSL_NEAR_END;
+	ret = ioctl(fd, DSL_FIO_PM_DATA_PATH_COUNTERS_TOTAL_GET,
+		    (int)&data_path_counters_total);
+
+	if ((ret < 0) && (data_path_counters_total.accessCtl.nReturn < DSL_SUCCESS)) {
+		fprintf(stderr, "HEC near end: error code %d\n",
+				data_path_counters_total.accessCtl.nReturn);
+	} else {
+		line->err.hec.us = data_path_counters_total.data.nHEC;
+	}
+
+	memset(&data_path_counters_total, 0x00, sizeof(DSL_PM_DataPathCountersTotal_t));
+	data_path_counters_total.nChannel = 0;
+	data_path_counters_total.nDirection = DSL_FAR_END;
+	ret = ioctl(fd, DSL_FIO_PM_DATA_PATH_COUNTERS_TOTAL_GET,
+		    (int)&data_path_counters_total);
+	if ((ret < 0) && (data_path_counters_total.accessCtl.nReturn < DSL_SUCCESS)) {
+		fprintf(stderr, "HEC far end: error code %d\n",
+				data_path_counters_total.accessCtl.nReturn);
+	} else {
+		line->err.hec.ds = data_path_counters_total.data.nHEC;
 	}
 
 	intel_xdsl_dev_close(fd);
