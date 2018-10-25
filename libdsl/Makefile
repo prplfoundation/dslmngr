@@ -1,6 +1,9 @@
 LIBDSL = libdsl.so
 OBJS = dsl.o
 
+# HACK for now - fix this
+INTELCPE=1
+
 ifneq ($(INTELCPE),)
   OBJS += intel.o
   LIBDSL_CFLAGS += -DINCLUDE_DSL_CPE_API_VRX
