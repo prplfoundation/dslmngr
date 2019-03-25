@@ -1,9 +1,10 @@
 /*
  * main.c - dslmngr application
  *
- * Copyright (C) 2018 Inteno Broadband Technology AB. All rights reserved.
+ * Copyright (C) 2019 iopsys Software Solutions AB. All rights reserved.
  *
- * Author: anjan.chanda@inteno.se
+ * Author: anjan.chanda@iopsys.eu
+ *         yalu.zhang@iopsys.eu
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -27,7 +28,6 @@
 #define _GNU_SOURCE
 #endif
 #include <pthread.h>
-
 #include <libubox/blobmsg.h>
 #include <libubox/blobmsg_json.h>
 #include <libubox/uloop.h>
@@ -37,39 +37,28 @@
 
 #include "dslmngr.h"
 
-#define DSLMGR_EVENT_THREAD	"dslmngr_eventd"
-
-
-static void dslmngr_cmd_main(struct ubus_context *ctx)
-{
-	int ret;
-
-	ret = ubus_add_object(ctx, &dsl_object);
-	if (ret)
-		fprintf(stderr, "Failed to add 'xdsl' object: %s\n",
-				ubus_strerror(ret));
-
-	uloop_run();
-}
-
+#if 0 // Converting netlink to UBUS is done by inbd for now
 void *dslmngr_event_main(void *arg)
 {
 	struct ubus_context *ctx = (struct ubus_context *)arg;
 
 	pthread_t me = pthread_self();
-	pthread_setname_np(me, DSLMGR_EVENT_THREAD);
+	pthread_setname_np(me, "dslmngr_eventd");
 
 	dslmngr_nl_msgs_handler(ctx);
 	return NULL;
 }
+#endif
 
 int main(int argc, char **argv)
 {
 	const char *ubus_socket = NULL;
-	int ch;
-	pthread_t evtid;
-	pthread_attr_t attr, *pattr = NULL;
 	struct ubus_context *ctx = NULL;
+	int ch, ret;
+#if 0
+	pthread_t evtid;
+	pthread_attr_t attr;
+#endif
 
 	while ((ch = getopt(argc, argv, "cs:")) != -1) {
 		switch (ch) {
@@ -80,19 +69,10 @@ int main(int argc, char **argv)
 			break;
 		}
 	}
-
 	argc -= optind;
 	argv += optind;
 
-	uloop_init();
-	ctx = ubus_connect(ubus_socket);
-	if (!ctx) {
-		fprintf(stderr, "Failed to connect to ubus\n");
-		return -1;
-	}
-
-	ubus_add_uloop(ctx);
-
+#if 0 // Converting netlink to UBUS is done by inbd for now
 	if (pthread_attr_init(&attr) == 0) {
 		struct sched_param sp;
 
@@ -100,17 +80,31 @@ int main(int argc, char **argv)
 		pthread_attr_setschedpolicy(&attr, SCHED_RR);
 		sp.sched_priority = 99;
 		pthread_attr_setschedparam(&attr, &sp);
-		pattr = &attr;
 	}
 
-	if (pthread_create(&evtid, pattr, &dslmngr_event_main, ctx) != 0)
+	if (pthread_create(&evtid, &attr, &dslmngr_event_main, ctx) != 0)
 		fprintf(stderr, "pthread_create error!\n");
 
 	dslmngr_cmd_main(ctx);
+#endif
+
+	uloop_init();
+	ctx = ubus_connect(ubus_socket);
+	if (!ctx) {
+		DSLMNGR_LOG(LOG_ERR, "Failed to connect to ubus\n");
+		return -1;
+	}
+
+	ubus_add_uloop(ctx);
+
+	if (dsl_add_ubus_objects(ctx) != 0)
+		goto __ret;
 
 	uloop_run();
+
+__ret:
 	ubus_free(ctx);
 	uloop_done();
 
-	return 0;
+	return ret;
 }

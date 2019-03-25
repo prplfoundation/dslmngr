@@ -1,13 +1,11 @@
 LIBDSL = libdsl.so
-OBJS = dsl.o
 
-# HACK for now - fix this
-INTELCPE=1
-
-ifneq ($(INTELCPE),)
-  OBJS += intel.o
-  LIBDSL_CFLAGS += -DINCLUDE_DSL_CPE_API_VRX
+if ($(PLATFORM),INTEL)
+SRCS := $(shell ls intel/*.c)
+else
+$(error Unknown PLATFORM: $(PLATFORM))
 endif
+OBJS := $(SRCS:.c=.o)
 
 all: $(LIBDSL)
 
@@ -19,3 +17,12 @@ libdsl.so: $(OBJS)
 
 clean:
 	rm -f *.o $(LIBDSL)
+
+export SRCS OBJS CFLAGS LOCAL_CFLAGS
+debug:
+	@echo "PLATFORM = $$PLATFORM"
+	@echo "SRCS = $$SRCS"
+	@echo "OBJS = $$OBJS"
+	@echo "CFLAGS = $$CFLAGS"
+
+.PHONY: all clean debug

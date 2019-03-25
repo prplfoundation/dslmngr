@@ -1,12 +1,10 @@
-PrplWrt DSL PoC consists of two parts.
-
 libdsl: SoC independent DSL API covering functions to configure DSL and gather stats.
 
 dsmngr: Userspace application to configure DSL from UCI options and provide ubus interface to start/stop DSL and gather stats. dslmngr links with libdsl and utilizes the libdsl functions.
 
 
      -----------------
-    |xdsl object @ubus|
+    |dsl object @ubus|
      -----------------
 	   ||
 	 -------
@@ -20,3 +18,529 @@ dsmngr: Userspace application to configure DSL from UCI options and provide ubus
        ----------
       |DSL Driver|
        ----------
+
+ -----------------------------------------------------------------------
+|				UBUS Data Model				|
+ -----------------------------------------------------------------------
+ubus call dsl status
+{
+	"line": [
+		{
+			"id": 0,
+			"status": "up",
+			"upstream": true,
+			"firmware_version": "8.11.0.15.0.7",
+			"link_status": "up",
+			"xtse_used": [
+				"00",
+				"00",
+				"00",
+				"00",
+				"00",
+				"00",
+				"00",
+				"01"
+			],
+			"current_profile": "17a",
+			"power_management_state": "l0",
+			"max_bit_rate": {
+				"us": 65067,
+				"ds": 141161
+			},
+			"line_encoding": "dmt",
+			"xtse": [
+				"15",
+				"00",
+				"04",
+				"00",
+				"0c",
+				"05",
+				"05",
+				"07"
+			],
+			"allowed_profiles": [
+				"8a",
+				"8b",
+				"8c",
+				"8b",
+				"12a",
+				"12b",
+				"17a",
+				"30a",
+				"35b"
+			],
+			"success_failure_cause": 0,
+			"upbokler_pb": [
+				2,
+				15,
+				12,
+				2048,
+				2048
+			],
+			"rxthrsh_ds": [
+				18,
+				18,
+				2048,
+				2048,
+				2048
+			],
+			"act_ra_mode": {
+				"us": 3,
+				"ds": 3
+			},
+			"snr_mroc_us": 0,
+			"last_state_transmitted": {
+				"us": 0,
+				"ds": 0
+			},
+			"us0_mask": 62451,
+			"trellis": {
+				"us": 1,
+				"ds": 1
+			},
+			"act_snr_mode": {
+				"us": 0,
+				"ds": 0
+			},
+			"line_number": 0,
+			"noise_margin": {
+				"us": 139,
+				"ds": 184
+			},
+			"snr_mpb_us": [
+				99,
+				182,
+				123,
+				-32768,
+				-32768
+			],
+			"snr_mpb_ds": [
+				184,
+				182,
+				186,
+				-32768,
+				-32768
+			],
+			"attenuation": {
+				"us": 38,
+				"ds": 35
+			},
+			"power": {
+				"us": 133,
+				"ds": 125
+			},
+			"xtur_vendor": "4946544E",
+			"xtur_country": "B500",
+			"xtur_ansi_std": 0,
+			"xtur_ansi_rev": 0,
+			"xtuc_vendor": "4244434D",
+			"xtuc_country": "B500",
+			"xtuc_ansi_std": 0,
+			"xtuc_ansi_rev": 0,
+			"channel": [
+				{
+					"id": 0,
+					"status": "up",
+					"link_encapsulation_used": "vdsl2_ptm",
+					"curr_rate": {
+						"us": 59998,
+						"ds": 100000
+					},
+					"actndr": {
+						"us": 59998,
+						"ds": 100000
+					},
+					"link_encapsulation_supported": [
+						"adsl2_atm",
+						"vdsl2_ptm"
+					],
+					"lpath": 0,
+					"intlvdepth": 1,
+					"intlvblock": 255,
+					"actual_interleaving_delay": 0,
+					"actinp": 0,
+					"inpreport": false,
+					"nfec": 255,
+					"rfec": 16,
+					"lsymb": 26823,
+					"actinprein": {
+						"us": 0,
+						"ds": 0
+					}
+				}
+			]
+		}
+	]
+}
+ubus call dsl stats
+{
+	"line": [
+		{
+			"id": 0,
+			"total_start": 193,
+			"showtime_start": 86,
+			"last_showtime_start": 0,
+			"current_day_start": 32512,
+			"quarter_hour_start": 112,
+			"total": {
+				"errored_secs": 0,
+				"severely_errored_secs": 0
+			},
+			"showtime": {
+				"errored_secs": 0,
+				"severely_errored_secs": 0
+			},
+			"lastshowtime": {
+				"errored_secs": 0,
+				"severely_errored_secs": 0
+			},
+			"currentday": {
+				"errored_secs": 0,
+				"severely_errored_secs": 0
+			},
+			"quarterhour": {
+				"errored_secs": 0,
+				"severely_errored_secs": 0
+			},
+			"channel": [
+				{
+					"id": 0,
+					"total_start": 193,
+					"showtime_start": 86,
+					"last_showtime_start": 0,
+					"current_day_start": 32512,
+					"quarter_hour_start": 112,
+					"total": {
+						"xtur_fec_errors": 0,
+						"xtuc_fec_errors": 0,
+						"xtur_hec_errors": 0,
+						"xtuc_hec_errors": 0,
+						"xtur_crc_errors": 0,
+						"xtuc_crc_errors": 0
+					},
+					"showtime": {
+						"xtur_fec_errors": 0,
+						"xtuc_fec_errors": 0,
+						"xtur_hec_errors": 0,
+						"xtuc_hec_errors": 0,
+						"xtur_crc_errors": 0,
+						"xtuc_crc_errors": 0
+					},
+					"lastshowtime": {
+						"xtur_fec_errors": 0,
+						"xtuc_fec_errors": 0,
+						"xtur_hec_errors": 0,
+						"xtuc_hec_errors": 0,
+						"xtur_crc_errors": 0,
+						"xtuc_crc_errors": 0
+					},
+					"currentday": {
+						"xtur_fec_errors": 0,
+						"xtuc_fec_errors": 0,
+						"xtur_hec_errors": 0,
+						"xtuc_hec_errors": 0,
+						"xtur_crc_errors": 0,
+						"xtuc_crc_errors": 0
+					},
+					"quarterhour": {
+						"xtur_fec_errors": 0,
+						"xtuc_fec_errors": 0,
+						"xtur_hec_errors": 0,
+						"xtuc_hec_errors": 0,
+						"xtur_crc_errors": 0,
+						"xtuc_crc_errors": 0
+					}
+				}
+			]
+		}
+	]
+}
+ubus call dsl.line.0 status
+{
+	"status": "up",
+	"upstream": true,
+	"firmware_version": "8.11.0.15.0.7",
+	"link_status": "up",
+	"xtse_used": [
+		"00",
+		"00",
+		"00",
+		"00",
+		"00",
+		"00",
+		"00",
+		"01"
+	],
+	"current_profile": "17a",
+	"power_management_state": "l0",
+	"max_bit_rate": {
+		"us": 65067,
+		"ds": 141209
+	},
+	"line_encoding": "dmt",
+	"xtse": [
+		"15",
+		"00",
+		"04",
+		"00",
+		"0c",
+		"05",
+		"05",
+		"07"
+	],
+	"allowed_profiles": [
+		"8a",
+		"8b",
+		"8c",
+		"8b",
+		"12a",
+		"12b",
+		"17a",
+		"30a",
+		"35b"
+	],
+	"success_failure_cause": 0,
+	"upbokler_pb": [
+		2,
+		15,
+		12,
+		2048,
+		2048
+	],
+	"rxthrsh_ds": [
+		18,
+		18,
+		2048,
+		2048,
+		2048
+	],
+	"act_ra_mode": {
+		"us": 3,
+		"ds": 3
+	},
+	"snr_mroc_us": 0,
+	"last_state_transmitted": {
+		"us": 0,
+		"ds": 0
+	},
+	"us0_mask": 62451,
+	"trellis": {
+		"us": 1,
+		"ds": 1
+	},
+	"act_snr_mode": {
+		"us": 0,
+		"ds": 0
+	},
+	"line_number": 0,
+	"noise_margin": {
+		"us": 139,
+		"ds": 184
+	},
+	"snr_mpb_us": [
+		101,
+		183,
+		124,
+		-32768,
+		-32768
+	],
+	"snr_mpb_ds": [
+		184,
+		182,
+		186,
+		-32768,
+		-32768
+	],
+	"attenuation": {
+		"us": 38,
+		"ds": 35
+	},
+	"power": {
+		"us": 133,
+		"ds": 125
+	},
+	"xtur_vendor": "4946544E",
+	"xtur_country": "B500",
+	"xtur_ansi_std": 0,
+	"xtur_ansi_rev": 0,
+	"xtuc_vendor": "4244434D",
+	"xtuc_country": "B500",
+	"xtuc_ansi_std": 0,
+	"xtuc_ansi_rev": 0
+}
+ubus call dsl.line.0 stats
+{
+	"total_start": 193,
+	"showtime_start": 86,
+	"last_showtime_start": 0,
+	"current_day_start": 32512,
+	"quarter_hour_start": 112,
+	"total": {
+		"errored_secs": 0,
+		"severely_errored_secs": 0
+	},
+	"showtime": {
+		"errored_secs": 0,
+		"severely_errored_secs": 0
+	},
+	"lastshowtime": {
+		"errored_secs": 0,
+		"severely_errored_secs": 0
+	},
+	"currentday": {
+		"errored_secs": 0,
+		"severely_errored_secs": 0
+	},
+	"quarterhour": {
+		"errored_secs": 0,
+		"severely_errored_secs": 0
+	}
+}
+ubus call dsl.line.0 stats "{'interval':'total'}"
+{
+	"errored_secs": 0,
+	"severely_errored_secs": 0
+}
+ubus call dsl.line.0 stats "{'interval':'showtime'}"
+{
+	"errored_secs": 0,
+	"severely_errored_secs": 0
+}
+ubus call dsl.line.0 stats "{'interval':'lastshowtime'}"
+{
+	"errored_secs": 0,
+	"severely_errored_secs": 0
+}
+ubus call dsl.line.0 stats "{'interval':'currentday'}"
+{
+	"errored_secs": 0,
+	"severely_errored_secs": 0
+}
+ubus call dsl.line.0 stats "{'interval':'quarterhour'}"
+{
+	"errored_secs": 0,
+	"severely_errored_secs": 0
+}
+ubus call dsl.channel.0 status
+{
+	"status": "up",
+	"link_encapsulation_used": "vdsl2_ptm",
+	"curr_rate": {
+		"us": 59998,
+		"ds": 100000
+	},
+	"actndr": {
+		"us": 59998,
+		"ds": 100000
+	},
+	"link_encapsulation_supported": [
+		"adsl2_atm",
+		"vdsl2_ptm"
+	],
+	"lpath": 0,
+	"intlvdepth": 1,
+	"intlvblock": 255,
+	"actual_interleaving_delay": 0,
+	"actinp": 0,
+	"inpreport": false,
+	"nfec": 255,
+	"rfec": 16,
+	"lsymb": 26823,
+	"actinprein": {
+		"us": 0,
+		"ds": 0
+	}
+}
+ubus call dsl.channel.0 stats
+{
+	"total_start": 193,
+	"showtime_start": 86,
+	"last_showtime_start": 0,
+	"current_day_start": 32512,
+	"quarter_hour_start": 112,
+	"total": {
+		"xtur_fec_errors": 0,
+		"xtuc_fec_errors": 0,
+		"xtur_hec_errors": 0,
+		"xtuc_hec_errors": 0,
+		"xtur_crc_errors": 0,
+		"xtuc_crc_errors": 0
+	},
+	"showtime": {
+		"xtur_fec_errors": 0,
+		"xtuc_fec_errors": 0,
+		"xtur_hec_errors": 0,
+		"xtuc_hec_errors": 0,
+		"xtur_crc_errors": 0,
+		"xtuc_crc_errors": 0
+	},
+	"lastshowtime": {
+		"xtur_fec_errors": 0,
+		"xtuc_fec_errors": 0,
+		"xtur_hec_errors": 0,
+		"xtuc_hec_errors": 0,
+		"xtur_crc_errors": 0,
+		"xtuc_crc_errors": 0
+	},
+	"currentday": {
+		"xtur_fec_errors": 0,
+		"xtuc_fec_errors": 0,
+		"xtur_hec_errors": 0,
+		"xtuc_hec_errors": 0,
+		"xtur_crc_errors": 0,
+		"xtuc_crc_errors": 0
+	},
+	"quarterhour": {
+		"xtur_fec_errors": 0,
+		"xtuc_fec_errors": 0,
+		"xtur_hec_errors": 0,
+		"xtuc_hec_errors": 0,
+		"xtur_crc_errors": 0,
+		"xtuc_crc_errors": 0
+	}
+}
+ubus call dsl.channel.0 stats "{'interval':'total'}"
+{
+	"xtur_fec_errors": 0,
+	"xtuc_fec_errors": 0,
+	"xtur_hec_errors": 0,
+	"xtuc_hec_errors": 0,
+	"xtur_crc_errors": 0,
+	"xtuc_crc_errors": 0
+}
+ubus call dsl.channel.0 stats "{'interval':'showtime'}"
+{
+	"xtur_fec_errors": 0,
+	"xtuc_fec_errors": 0,
+	"xtur_hec_errors": 0,
+	"xtuc_hec_errors": 0,
+	"xtur_crc_errors": 0,
+	"xtuc_crc_errors": 0
+}
+ubus call dsl.channel.0 stats "{'interval':'lastshowtime'}"
+{
+	"xtur_fec_errors": 0,
+	"xtuc_fec_errors": 0,
+	"xtur_hec_errors": 0,
+	"xtuc_hec_errors": 0,
+	"xtur_crc_errors": 0,
+	"xtuc_crc_errors": 0
+}
+ubus call dsl.channel.0 stats "{'interval':'currentday'}"
+{
+	"xtur_fec_errors": 0,
+	"xtuc_fec_errors": 0,
+	"xtur_hec_errors": 0,
+	"xtuc_hec_errors": 0,
+	"xtur_crc_errors": 0,
+	"xtuc_crc_errors": 0
+}
+ubus call dsl.channel.0 stats "{'interval':'quarterhour'}"
+{
+	"xtur_fec_errors": 0,
+	"xtuc_fec_errors": 0,
+	"xtur_hec_errors": 0,
+	"xtuc_hec_errors": 0,
+	"xtur_crc_errors": 0,
+	"xtuc_crc_errors": 0
+}

@@ -1,10 +1,9 @@
 /*
- * dslmngr header file
+ * utils.h - private header file
  *
  * Copyright (C) 2019 iopsys Software Solutions AB. All rights reserved.
  *
- * Author: anjan.chanda@iopsys.eu
- *         yalu.zhang@iopsys.eu
+ * Author: yalu.zhang@iopsys.eu
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -20,24 +19,18 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA
  */
-#ifndef _DSLMNGR_H
-#define _DSLMNGR_H
+#ifndef _UTILS_H
+#define _UTILS_H
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
 #include <stdio.h>
-#include <syslog.h>
-#include <libubus.h>
 
-#define DSLMNGR_LOG(log_level, format...) fprintf(stderr, ##format)
-
-#define CHECK_POINT() printf("Check point at %s@%s:%d\n", __func__, __FILE__, __LINE__)
-
-int dsl_add_ubus_objects(struct ubus_context *ctx);
+#define LIBDSL_LOG(log_level, format...) fprintf(stderr, ##format)
 
 #ifdef __cplusplus
 }
 #endif
-#endif /* _DSLMNGR_H */
+#endif /* _UTILS_H */

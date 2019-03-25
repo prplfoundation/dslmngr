@@ -1,9 +1,10 @@
 /*
  * dslmngr_nl.c - converts netlink messages to UBUS events
  *
- * Copyright (C) 2018 Inteno Broadband Technology AB. All rights reserved.
+ * Copyright (C) 2019 iopsys Software Solutions AB. All rights reserved.
  *
- * Author: anjan.chanda@inteno.se
+ * Author: anjan.chanda@iopsys.eu
+ *         yalu.zhang@iopsys.eu
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -19,24 +20,22 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA
  */
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
 #include <signal.h>
-
 #include <netlink/netlink.h>
 #include <netlink/socket.h>
 #include <netlink/genl/ctrl.h>
 #include <netlink/genl/genl.h>
-
 #include <netlink/attr.h>
-
-#include <libubox/blobmsg_json.h>
+#include "libubox/blobmsg_json.h"
 #include "libubus.h"
 
-#define XDSL_GENL_NAME	"xdsl"
-#define XDSL_GENL_GRP	"notify"
+#define NETLINK_FAMILY_NAME "easysoc"
+#define NETLINK_GROUP_NAME  "notify"
+
+#define MAX_MSG 128
 
 /* nl attributes */
 enum {
@@ -44,8 +43,6 @@ enum {
 	XDSL_NL_MSG,
 	__XDSL_NL_MAX,
 };
-#define XDSL_NL_MAX (__XDSL_NL_MAX - 1)
-#define MAX_MSG 128
 
 static struct nla_policy nl_notify_policy[__XDSL_NL_MAX] = {
 	[XDSL_NL_MSG] = { .type = NLA_STRING },
@@ -115,12 +112,8 @@ int dslmngr_nl_msgs_handler(struct ubus_context *ctx)
 	}
 
 	if ((grp = genl_ctrl_resolve_grp(sock,
-					XDSL_GENL_NAME,
-					XDSL_GENL_GRP)) < 0) {
-		/* fprintf(stderr, "Error: %s (%s grp %s)\n",
-				nl_geterror(grp),
-				XDSL_GENL_NAME,
-				XDSL_GENL_GRP); */
+					NETLINK_FAMILY_NAME,
+					NETLINK_GROUP_NAME)) < 0) {
 		return -1;
 	}
 
@@ -131,8 +124,8 @@ int dslmngr_nl_msgs_handler(struct ubus_context *ctx)
 		if (err < 0) {
 			fprintf(stderr, "Error: %s (%s grp %s)\n",
 					nl_geterror(err),
-					XDSL_GENL_NAME,
-					XDSL_GENL_GRP);
+					NETLINK_FAMILY_NAME,
+					NETLINK_GROUP_NAME);
 		}
 	}
 
