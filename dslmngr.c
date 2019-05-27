@@ -108,6 +108,83 @@ static const char *dsl_mod_str(enum dsl_modtype mod)
 	}
 }
 
+static const char *dsl_xtse_str(enum dsl_xtse_bit xtse)
+{
+	switch (xtse) {
+	/* Octet 1 - ADSL, i.e. g.dmt */
+	case T1_413: return dsl_mod_str(MOD_T1_413);
+	case ETSI_101_388: return dsl_mod_str(MOD_ETSI_101_388);
+	case G_992_1_POTS_NON_OVERLAPPED: return dsl_mod_str(MOD_G_922_1_ANNEX_A);
+	case G_992_1_POTS_OVERLAPPED: return dsl_mod_str(MOD_G_922_1_ANNEX_A);
+	case G_992_1_ISDN_NON_OVERLAPPED: return dsl_mod_str(MOD_G_922_1_ANNEX_B);
+	case G_992_1_ISDN_OVERLAPPED: return dsl_mod_str(MOD_G_922_1_ANNEX_B);
+	case G_992_1_TCM_ISDN_NON_OVERLAPPED: return dsl_mod_str(MOD_G_922_1_ANNEX_C);
+	case G_992_1_TCM_ISDN_OVERLAPPED: return dsl_mod_str(MOD_G_922_1_ANNEX_C);
+
+	/* Octet 2 - Splitter-less ADSL, i.e. g.lite */
+	case G_992_2_POTS_NON_OVERLAPPED: return dsl_mod_str(MOD_G_992_2);
+	case G_992_2_POTS_OVERLAPPED: return dsl_mod_str(MOD_G_992_2);
+	case G_992_2_TCM_ISDN_NON_OVERLAPPED: return dsl_mod_str(MOD_G_992_2);
+	case G_992_2_TCM_ISDN_OVERLAPPED: return dsl_mod_str(MOD_G_992_2);
+	/* Bits 13 - 16 are reserved */
+
+	/* Octet 3 - ADSL2 */
+	/* Bits 17 - 18 are reserved */
+	case G_992_3_POTS_NON_OVERLAPPED: return dsl_mod_str(MOD_G_992_3_Annex_A);
+	case G_992_3_POTS_OVERLAPPED: return dsl_mod_str(MOD_G_992_3_Annex_A);
+	case G_992_3_ISDN_NON_OVERLAPPED: return dsl_mod_str(MOD_G_992_3_Annex_B);
+	case G_992_3_ISDN_OVERLAPPED: return dsl_mod_str(MOD_G_992_3_Annex_B);
+	case G_992_3_TCM_ISDN_NON_OVERLAPPED: return dsl_mod_str(MOD_G_992_3_Annex_C);
+	case G_992_3_TCM_ISDN_OVERLAPPED: return dsl_mod_str(MOD_G_992_3_Annex_C);
+
+	/* Octet 4 - Splitter-less ADSL2 and ADSL2 */
+	case G_992_4_POTS_NON_OVERLAPPED: return dsl_mod_str(MOD_G_992_4);
+	case G_992_4_POTS_OVERLAPPED: return dsl_mod_str(MOD_G_992_4);
+	/* Bits 27 - 28 are reserved */
+	case G_992_3_ANNEX_I_NON_OVERLAPPED: return dsl_mod_str(MOD_G_992_3_Annex_I);
+	case G_992_3_ANNEX_I_OVERLAPPED: return dsl_mod_str(MOD_G_992_3_Annex_I);
+	case G_992_3_ANNEX_J_NON_OVERLAPPED: return dsl_mod_str(MOD_G_992_3_Annex_J);
+	case G_992_3_ANNEX_J_OVERLAPPED: return dsl_mod_str(MOD_G_992_3_Annex_J);
+
+
+	/* Octet 5 - Splitter-less ADSL2 and ADSL2 */
+	case G_992_4_ANNEX_I_NON_OVERLAPPED: return dsl_mod_str(MOD_G_992_4);
+	case G_992_4_ANNEX_I_OVERLAPPED: return dsl_mod_str(MOD_G_992_4);
+	case G_992_3_POTS_MODE_1: return dsl_mod_str(MOD_G_992_3_Annex_L);
+	case G_992_3_POTS_MODE_2: return dsl_mod_str(MOD_G_992_3_Annex_L);
+	case G_992_3_POTS_MODE_3: return dsl_mod_str(MOD_G_992_3_Annex_L);
+	case G_992_3_POTS_MODE_4: return dsl_mod_str(MOD_G_992_3_Annex_L);
+	case G_992_3_EXT_POTS_NON_OVERLAPPED: return dsl_mod_str(MOD_G_992_3_Annex_M);
+	case G_992_3_EXT_POTS_OVERLAPPED: return dsl_mod_str(MOD_G_992_3_Annex_M);
+
+	/* Octet 6 - ADSL2+ */
+	case G_992_5_POTS_NON_OVERLAPPED: return dsl_mod_str(MOD_G_992_5_Annex_A);
+	case G_992_5_POTS_OVERLAPPED: return dsl_mod_str(MOD_G_992_5_Annex_A);
+	case G_992_5_ISDN_NON_OVERLAPPED: return dsl_mod_str(MOD_G_992_5_Annex_B);
+	case G_992_5_ISDN_OVERLAPPED: return dsl_mod_str(MOD_G_992_5_Annex_B);
+	case G_992_5_TCM_ISDN_NON_OVERLAPPED: return dsl_mod_str(MOD_G_992_5_Annex_C);
+	case G_992_5_TCM_ISDN_OVERLAPPED: return dsl_mod_str(MOD_G_992_5_Annex_C);
+	case G_992_5_ANNEX_I_NON_OVERLAPPED: return dsl_mod_str(MOD_G_992_5_Annex_I);
+	case G_992_5_ANNEX_I_OVERLAPPED: return dsl_mod_str(MOD_G_992_5_Annex_I);
+
+	/* Octet 7 - ADSL2+ */
+	case G_992_5_ANNEX_J_NON_OVERLAPPED: return dsl_mod_str(MOD_G_992_5_Annex_J);
+	case G_992_5_ANNEX_J_OVERLAPPED: return dsl_mod_str(MOD_G_992_5_Annex_J);
+	case G_992_5_EXT_POTS_NON_OVERLAPPED: return dsl_mod_str(MOD_G_992_5_Annex_M);
+	case G_992_5_EXT_POTS_OVERLAPPED: return dsl_mod_str(MOD_G_992_5_Annex_M);
+	/* Bits 53 - 56 are reserved */
+
+	/* Octet 8 - VDSL2 */
+	case G_993_2_NORTH_AMERICA: return dsl_mod_str(MOD_G_993_2_Annex_A);
+	case G_993_2_EUROPE: return dsl_mod_str(MOD_G_993_2_Annex_B);
+	case G_993_2_JAPAN: return dsl_mod_str(MOD_G_993_2_Annex_C);
+	/* Bits 60 - 64 are reserved */
+
+	default:
+		return "unknown";
+	}
+}
+
 static const char *dsl_line_encoding_str(enum dsl_line_encoding encoding)
 {
 	switch (encoding) {
@@ -188,14 +265,21 @@ static void dsl_add_int_to_blob(const char *name, long int value, struct blob_bu
 static void dsl_status_line_to_blob(const struct dsl_line *line, struct blob_buf *bb)
 {
 	void *array;
-	int i;
+	int i, j, count;
 	unsigned long opt;
-	char str[64];
+	char str[64], *modes[ARRAY_SIZE(line->standard_used.xtse) * 8] = { NULL, };
+	enum dsl_if_status if_status = line->status;
 
 	/*
 	 * Put most important information at the beginning
 	 */
-	blobmsg_add_string(bb, "status", dsl_if_status_str(line->status));
+	if (if_status == IF_UP && line->link_status != LINK_UP) {
+		/* Some inconsistent status might be retrieved from the driver, i.e. interface status is
+		 * up and the link status is not up. In this case, we force reporting the interface's
+		 * status being down */
+		if_status = IF_DOWN;
+	}
+	blobmsg_add_string(bb, "status", dsl_if_status_str(if_status));
 	blobmsg_add_u8(bb, "upstream", line->upstream);
 	blobmsg_add_string(bb, "firmware_version", line->firmware_version);
 	blobmsg_add_string(bb, "link_status", dsl_link_status_str(line->link_status));
@@ -207,6 +291,14 @@ static void dsl_status_line_to_blob(const struct dsl_line *line, struct blob_buf
 			blobmsg_add_string(bb, "", str);
 		}
 		blobmsg_close_array(bb, array);
+
+		// For backward compatibility, provide the old format as well
+		for (i = T1_413; i <= G_993_2_JAPAN; i++) {
+			if (XTSE_BIT_GET(line->standard_used.xtse, i)) {
+				blobmsg_add_string(bb, "standard_used", dsl_xtse_str(i));
+				break;
+			}
+		}
 	} else {
 		for (opt = (unsigned long)MOD_G_922_1_ANNEX_A;
 			 opt <= (unsigned long)MOD_G_993_2_Annex_C;
@@ -232,6 +324,27 @@ static void dsl_status_line_to_blob(const struct dsl_line *line, struct blob_buf
 		for (i = 0; i < ARRAY_SIZE(line->standard_supported.xtse); i++) {
 			snprintf(str, sizeof(str), "%02x", line->standard_supported.xtse[i]);
 			blobmsg_add_string(bb, "", str);
+		}
+		blobmsg_close_array(bb, array);
+
+		// For backward compatibility, provide the old format as well
+		array = blobmsg_open_array(bb, "standards_supported");
+		for (i = T1_413, count = 0; i <= G_993_2_JAPAN; i++) {
+			if (XTSE_BIT_GET(line->standard_supported.xtse, i)) {
+				/* More than one XTSE bits can be mapped to the same old standard. So we need to filter
+				 * out the repeated ones. */
+				const char *mod = dsl_xtse_str(i);
+
+				for (j = 0; j < count; j++) {
+					if (strcmp(mod, modes[j]) == 0)
+						break;
+				}
+				if (j == count) {
+					// Not found
+					modes[count++] = mod;
+					blobmsg_add_string(bb, "", mod);
+				}
+			}
 		}
 		blobmsg_close_array(bb, array);
 	} else {
