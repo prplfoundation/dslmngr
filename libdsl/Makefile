@@ -1,6 +1,6 @@
 LIBDSL = libdsl.so
 
-if ($(PLATFORM),INTEL)
+ifeq ($(PLATFORM),INTEL)
 SRCS := $(shell ls intel/*.c)
 else
 $(error Unknown PLATFORM: $(PLATFORM))

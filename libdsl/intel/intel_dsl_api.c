@@ -38,8 +38,8 @@
 #include "drv_dsl_cpe_api/drv_dsl_cpe_api.h"
 #include "dsl-fapi/dsl_fapi.h"
 
-#include "xdsl.h"
-#include "utils.h"
+#include "../xdsl.h"
+#include "../utils.h"
 
 /**
  * Mappings among string values and enum ones
