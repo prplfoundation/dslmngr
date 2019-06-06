@@ -41,6 +41,7 @@ ubus call dsl status
 				"00",
 				"01"
 			],
+			"standard_used": "vdsl2_annexa",
 			"current_profile": "17a",
 			"power_management_state": "l0",
 			"max_bit_rate": {
@@ -57,6 +58,27 @@ ubus call dsl status
 				"05",
 				"05",
 				"07"
+			],
+			"standards_supported": [
+				"t1413",
+				"gdmt_annexa",
+				"gdmt_annexb",
+				"glite",
+				"adsl2_annexa",
+				"adsl2_annexb",
+				"splitterless_adsl2",
+				"adsl2_annexi",
+				"adsl2_annexj",
+				"adsl2_annexl",
+				"adsl2_annexm",
+				"adsl2p_annexa",
+				"adsl2p_annexb",
+				"adsl2p_annexi",
+				"adsl2p_annexj",
+				"adsl2p_annexm",
+				"vdsl2_annexa",
+				"vdsl2_annexb",
+				"vdsl2_annexc"
 			],
 			"allowed_profiles": [
 				"8a",
@@ -271,6 +293,7 @@ ubus call dsl.line.0 status
 		"00",
 		"01"
 	],
+	"standard_used": "vdsl2_annexa",
 	"current_profile": "17a",
 	"power_management_state": "l0",
 	"max_bit_rate": {
@@ -287,6 +310,27 @@ ubus call dsl.line.0 status
 		"05",
 		"05",
 		"07"
+	],
+	"standards_supported": [
+		"t1413",
+		"gdmt_annexa",
+		"gdmt_annexb",
+		"glite",
+		"adsl2_annexa",
+		"adsl2_annexb",
+		"splitterless_adsl2",
+		"adsl2_annexi",
+		"adsl2_annexj",
+		"adsl2_annexl",
+		"adsl2_annexm",
+		"adsl2p_annexa",
+		"adsl2p_annexb",
+		"adsl2p_annexi",
+		"adsl2p_annexj",
+		"adsl2p_annexm",
+		"vdsl2_annexa",
+		"vdsl2_annexb",
+		"vdsl2_annexc"
 	],
 	"allowed_profiles": [
 		"8a",
